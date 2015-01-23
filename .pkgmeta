@@ -1,0 +1,5 @@
+package-as: AutoLeader
+manual-changelog: CHANGELOG.txt
+
+ignore:
+    - scripts

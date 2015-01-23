@@ -1,0 +1,13 @@
+## Interface: 60000
+## Title: AutoLeader
+## Notes: Allows you to always pass lead to a person when arenaing.
+## SavedVariables: AutoLeaderDB
+## Author: Outroot
+## Version: 0.1
+## X-Curse-Packaged-Version: v0.1
+## X-Curse-Project-Name: AutoLeader
+## X-Curse-Project-ID: autoleader
+## X-Curse-Repository-ID: wow/AutoLeader/mainline
+
+embeds.xml
+AutoLeader.lua
