@@ -5,6 +5,8 @@ WoW addon that automatically promotes someone to leader in arena. This is useful
 
 ### How to use
 
-Once in a party, right click their frame and click "Auto Leader". You will get a confirmation in the chat that it is enabled for that person.
+Once in a party, right click their frame and click "Auto Leader". Do the same thing again to disable giving auto leader to that person.
 
-Do the same thing again to disable giving auto leader to that person.
+### Who made it?
+
+I go by a lot of WoW names, but you might know me as creamcup, mixup, dotup.

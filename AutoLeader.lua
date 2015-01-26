@@ -31,7 +31,7 @@ function AutoLeader:OnInitialize()
   LibStub("AceConfig-3.0"):RegisterOptionsTable("AutoLeader.profiles", profiles)
   LibStub("AceConfigDialog-3.0"):AddToBlizOptions("AutoLeader.profiles", "Profiles", "AutoLeader")
 
-  UnitPopupButtons["AUTO_LEADER"] = { text = "Auto Leader", dist = 0 }
+  UnitPopupButtons["AUTO_LEADER"] = { text = "Auto Leader", dist = 0, checkable = true }
   table.insert(UnitPopupMenus["PARTY"], #UnitPopupMenus["FRIEND"]-1, "AUTO_LEADER")
   table.insert(UnitPopupMenus["RAID_PLAYER"], #UnitPopupMenus["FRIEND"]-1, "AUTO_LEADER")
   self:SecureHook("ToggleDropDownMenu", self.ToggleDropDownMenuHook)
@@ -68,7 +68,7 @@ function AutoLeader:PassLead()
     end
   end
 
-  if found and AutoLeader.leader ~= nil and not UnitIsGroupLeader(AutoLeader.leader) then
+  if found and AutoLeader.leader ~= nil and not UnitIsGroupLeader(AutoLeader.leader) and UnitIsGroupLeader("player") then
     AutoLeader:Print("Gave leader to", AutoLeader.leader)
     PromoteToLeader(AutoLeader.leader)
   end
@@ -83,6 +83,10 @@ function AutoLeader:GROUP_ROSTER_UPDATE()
   found = false
   for i = 0, MAX_RAID_MEMBERS do
     name = select(1, GetRaidRosterInfo(i))
+    -- if there is a server in the name, just get the person's name
+    if name ~= nil and string.find(name, "-") then
+      name = string.gmatch(name, "%a+")()
+    end
     if self.leader == name then
       found = true
       break
@@ -106,7 +110,9 @@ function AutoLeader:ToggleDropDownMenuHook(level, value, dropDownFrame, anchorNa
     if level == nil then
       level = 1
     end
-    -- Just so we don't have to concat strings for each interval
+    local listFrame = _G["DropDownList"..level];
+    local index = listFrame and (listFrame.numButtons + 1) or 1;
+    local listFrameName = listFrame:GetName();
     local buttonPrefix = "DropDownList" .. level .. "Button";
     -- Start at 2 because 1 is always going to be the title (i.e. player name) in our case
     local i = 2;
@@ -116,14 +122,24 @@ function AutoLeader:ToggleDropDownMenuHook(level, value, dropDownFrame, anchorNa
       if (not button) then break end;
       -- If the button is our button...
       if (button:GetText() == UnitPopupButtons["AUTO_LEADER"].text) then
-        button.func = function()
-          player = _G[buttonPrefix.."1"]:GetText()
+        player = _G[buttonPrefix.."1"]:GetText()
+        if player == AutoLeader.leader then
+          button:LockHighlight();
+          _G[buttonPrefix..i.."Check"]:Show();
+          _G[buttonPrefix..i.."UnCheck"]:Hide();
+        else
+          button:UnlockHighlight();
+          _G[buttonPrefix..i.."UnCheck"]:Show();
+          _G[buttonPrefix..i.."Check"]:Hide();
+        end
+
+        button.func = function()          
           if AutoLeader.leader == nil or AutoLeader.leader ~= player then
-            AutoLeader:Print("Enabled for:", player)
-            AutoLeader.leader = player
+            --AutoLeader:Print("Enabled for:", player)
+            AutoLeader.leader = player            
           elseif AutoLeader.leader == player then
-            AutoLeader:Print("Disabled for:", AutoLeader.leader)
-            AutoLeader.leader = nil
+            --AutoLeader:Print("Disabled for:", AutoLeader.leader)
+            AutoLeader.leader = nil            
           end
         end
         break;
