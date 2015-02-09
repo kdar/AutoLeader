@@ -43,34 +43,46 @@ end
 
 function AutoLeader:OnEnable()
   self:RegisterEvent("GROUP_ROSTER_UPDATE")
-  self:ScheduleRepeatingTimer(self.PassLead, 10)
+  self:RegisterEvent("PLAYER_ENTERING_WORLD")
   self.db.profile.enabled = true
 end
 
 function AutoLeader:OnDisable()
   self:UnregisterEvent("GROUP_ROSTER_UPDATE")
-  self:CancelTimer(self.timer)
+  self:UnregisterEvent("PLAYER_ENTERING_WORLD")  
   self.db.profile.enabled = false
 end
 
+function AutoLeader:PLAYER_ENTERING_WORLD()
+  if self.db.profile.enabled and AutoLeader.leader ~= nil and select(2, IsInInstance()) == "arena" then
+    self:ScheduleRepeatingTimer(self.PassLead, 5)
+  else
+    self:CancelTimer(self.timer)
+  end
+end
+
 function AutoLeader:PassLead()
-  local instanceType = select(2, IsInInstance())
-  if instanceType ~= "arena" then
+  if not UnitIsGroupLeader("player") then
+    AutoLeader:CancelTimer(AutoLeader.timer)
     return
   end
 
   found = false
   for i = 0, MAX_RAID_MEMBERS do
     name = select(1, GetRaidRosterInfo(i))
+    if name ~= nil and string.find(name, "-") then
+      name = string.gmatch(name, "%a+")()
+    end
     if AutoLeader.leader == name then
       found = true
       break
     end
   end
 
-  if found and AutoLeader.leader ~= nil and not UnitIsGroupLeader(AutoLeader.leader) and UnitIsGroupLeader("player") then
+  if found then
     AutoLeader:Print("Gave leader to", AutoLeader.leader)
     PromoteToLeader(AutoLeader.leader)
+    AutoLeader:CancelTimer(AutoLeader.timer)
   end
 end
 
